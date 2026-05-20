@@ -6,7 +6,6 @@ services:
     plan: free
     buildCommand: >
       pip install -r requirements.txt &&
-      python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')" &&
       alembic upgrade head
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
     healthCheckPath: /health
@@ -63,3 +62,8 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://carpentriq-api.onrender.com
+      - key: VITE_RAZORPAY_KEY_ID
+        sync: false
