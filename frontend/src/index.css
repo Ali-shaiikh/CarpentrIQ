@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+
+html {
+  scroll-behavior: smooth;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+/* ── Safe-area bottom padding (iPhone notch) ─────────────────────────────── */
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* ── Inputs: minimum 16px to prevent iOS Safari zoom on focus ────────────── */
+
+input, select, textarea {
+  font-size: max(16px, 1em);
+}
+
+/* ── Custom scrollbar ────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(201, 168, 76, 0.3);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 168, 76, 0.6);
+}
+
+/* ── Text selection ──────────────────────────────────────────────────────── */
+
+::selection {
+  background-color: rgba(201, 168, 76, 0.18);
+  color: #1B3A2D;
+}
+
+/* ── Focus ring ──────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid #1B3A2D;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.animate-fade-up {
+  animation: fade-up 0.22s ease-out both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out both;
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out both;
+}
+
+/* Card reveal on hover */
+@keyframes card-lift {
+  from { box-shadow: 0 2px 12px rgba(27,58,45,0.08); }
+  to   { box-shadow: 0 8px 32px rgba(27,58,45,0.16); }
+}
+
+/* ── Wood grain background motif ────────────────────────────────────────── */
+/* Subtle ruler-mark texture for dark sections */
+
+.bg-grain {
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      rgba(201, 168, 76, 0.07) 0px,
+      rgba(201, 168, 76, 0.07) 1px,
+      transparent 1px,
+      transparent 100px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(201, 168, 76, 0.035) 0px,
+      rgba(201, 168, 76, 0.035) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+}
+
+/* ── Masonry grid ────────────────────────────────────────────────────────── */
+
+.masonry {
+  columns: 3;
+  column-gap: 16px;
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1024px) {
+  .masonry { columns: 2; }
+}
+
+@media (max-width: 640px) {
+  .masonry { columns: 1; }
+}
+
+/* ── Utility: hide scrollbar ─────────────────────────────────────────────── */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Measurement-tape divider ────────────────────────────────────────────── */
+
+.measure-divider {
+  position: relative;
+  height: 24px;
+  overflow: hidden;
+}
+
+.measure-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(201, 168, 76, 0.2);
+}
+
+/* ── Carpenter card hover ────────────────────────────────────────────────── */
+
+.carpenter-card {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.carpenter-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+}
+.carpenter-card:hover .card-cta {
+  opacity: 1;
+  transform: translateY(0);
+}
+.card-cta {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+/* ── Stat number pulse ───────────────────────────────────────────────────── */
+
+@keyframes count-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+.stat-number {
+  animation: count-in 0.4s ease-out both;
+}
