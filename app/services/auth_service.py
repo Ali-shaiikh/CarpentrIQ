@@ -58,7 +58,7 @@ class AuthService:
         return otp
 
     async def send_otp_sms(self, phone: str, otp: str) -> bool:
-        """Send OTP via MSG91 in production; log to console in development.
+        """Send OTP via 2Factor.in in production; log to console in development.
 
         Never raises — logs errors and returns False on failure so auth flow continues.
         """
@@ -66,22 +66,19 @@ class AuthService:
             logger.info("OTP for %s: %s", phone, otp)
             return True
 
-        if not settings.msg91_auth_key or not settings.msg91_template_id:
-            logger.error("MSG91 credentials not configured — cannot send SMS")
+        if not settings.twofactor_api_key:
+            logger.error("2Factor.in API key not configured — cannot send SMS")
             return False
 
         try:
             async with httpx.AsyncClient(timeout=10) as client:
-                resp = await client.post(
-                    "https://api.msg91.com/api/v5/otp",
-                    params={
-                        "authkey": settings.msg91_auth_key,
-                        "template_id": settings.msg91_template_id,
-                        "mobile": f"91{phone}",
-                        "otp": otp,
-                    },
+                resp = await client.get(
+                    f"https://2factor.in/API/V1/{settings.twofactor_api_key}/SMS/{phone}/{otp}",
                 )
-                resp.raise_for_status()
+                data = resp.json()
+                if data.get("Status") != "Success":
+                    logger.error("2Factor.in rejected OTP send for %s: %s", phone, data)
+                    return False
                 return True
         except Exception as exc:
             logger.error("SMS send failed for %s: %s", phone, exc)

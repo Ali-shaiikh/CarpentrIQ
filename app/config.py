@@ -44,9 +44,8 @@ class Settings(BaseSettings):
     app_base_url: str = "http://localhost:8000"
     frontend_url: str = "http://localhost:5173"
 
-    # OTP
-    msg91_auth_key: str = ""
-    msg91_template_id: str = ""
+    # OTP — 2Factor.in (free tier: 10,000 OTPs/month)
+    twofactor_api_key: str = ""
 
     # AI image generation — fal.ai (per-item furniture renders)
     fal_api_key: str = ""
