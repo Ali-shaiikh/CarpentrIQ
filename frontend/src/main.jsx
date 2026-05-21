@@ -7,7 +7,9 @@ import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <React.Suspense fallback={null}>
+      <App />
+    </React.Suspense>
     <Toaster position="top-right" />
   </React.StrictMode>
 );
