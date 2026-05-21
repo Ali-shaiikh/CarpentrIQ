@@ -115,11 +115,7 @@ async def health() -> dict:
         logger.warning("Health check — DB error: %s", exc)
 
     try:
-        import ssl as _ssl
-        ssl_ctx = _ssl.SSLContext(_ssl.PROTOCOL_TLS_CLIENT)
-        ssl_ctx.check_hostname = False
-        ssl_ctx.verify_mode = _ssl.CERT_NONE
-        r = aioredis.from_url(settings.redis_url, socket_connect_timeout=10, ssl_context=ssl_ctx)
+        r = aioredis.from_url(settings.redis_url, socket_connect_timeout=10)
         await r.ping()
         await r.aclose()
         result["redis"] = "connected"
