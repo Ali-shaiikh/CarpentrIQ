@@ -350,21 +350,21 @@ export default function Landing() {
   function openHomeownerLogin() { setLoginMode("homeowner"); setShowLogin(true); }
 
   const STEPS = [
-    { num: "01", title: "Share a link on WhatsApp", desc: "You get a unique link — carpentriq.in/q/your-name. Share it with any client on WhatsApp. They open it in their browser. No app, no signup." },
-    { num: "02", title: "Client uploads room photos", desc: "Client photographs the room from their phone. We use standard door height (2100mm) as a scale reference to estimate room dimensions automatically." },
-    { num: "03", title: "Generate a room preview", desc: "A photorealistic image of the furnished room is generated. Client sees exactly what they're buying before you lift a single tool." },
-    { num: "04", title: "Quote sent. Advance collected.", desc: "Material costs, labour, margin — all auto-calculated. Branded PDF generated in seconds. Client approves with one tap. Razorpay collects the 30% advance." },
+    { num: "01", title: t("landing.step1_title"), desc: t("landing.step1_desc") },
+    { num: "02", title: t("landing.step2_title"), desc: t("landing.step2_desc") },
+    { num: "03", title: t("landing.step3_title"), desc: t("landing.step3_desc") },
+    { num: "04", title: t("landing.step4_title"), desc: t("landing.step4_desc") },
   ];
 
   const PLAN_FEATURES = [
-    "Unlimited client enquiries",
-    "Photorealistic room image generation",
-    "YOLOv8 room dimension analysis",
-    "Branded quote PDF — A4, print-ready",
-    "Razorpay payment link on every quote",
-    "WhatsApp-ready client share link",
-    "Job progress tracking",
-    "4 languages: EN, हिं, मर, اردو",
+    t("landing.plan_f1"),
+    t("landing.plan_f2"),
+    t("landing.plan_f3"),
+    t("landing.plan_f4"),
+    t("landing.plan_f5"),
+    t("landing.plan_f6"),
+    t("landing.plan_f7"),
+    t("landing.plan_f8"),
   ];
 
   const TICKER_ITEMS = [
@@ -388,14 +388,14 @@ export default function Landing() {
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
             <Link to="/explore" style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, color: "rgba(27,58,45,0.6)", textDecoration: "none" }}
               onMouseEnter={e => e.target.style.color = "#1B3A2D"} onMouseLeave={e => e.target.style.color = "rgba(27,58,45,0.6)"}>
-              Explore craftsmen
+              {t("landing.nav_explore")}
             </Link>
             <LanguageSwitcher />
             <button onClick={openHomeownerLogin} style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, color: "#1B3A2D", background: "none", border: "1.5px solid rgba(27,58,45,0.2)", borderRadius: 4, padding: "0 14px", height: 36, cursor: "pointer" }}>
-              I'm a homeowner
+              {t("landing.nav_homeowner")}
             </button>
             <button onClick={openCarpenterLogin} style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, color: "#F5F0E8", background: "#1B3A2D", border: "none", borderRadius: 4, padding: "0 18px", height: 36, cursor: "pointer" }}>
-              Carpenter login
+              {t("landing.nav_login")}
             </button>
           </div>
         </div>
@@ -416,34 +416,34 @@ export default function Landing() {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 4, padding: "5px 12px", marginBottom: 32 }}>
               <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#C9A84C" }} />
               <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 600, color: "#C9A84C", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                Mumbai · Phase 1 · Now in trial
+                {t("landing.hero_badge")}
               </span>
             </div>
 
             <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: "clamp(52px, 7vw, 96px)", color: "#F5F0E8", lineHeight: 1.0, margin: "0 0 28px", letterSpacing: "-0.02em" }}>
-              The business<br />
-              behind your<br />
-              <span style={{ color: "#C9A84C" }}>craft.</span>
+              {t("landing.hero_line1")}<br />
+              {t("landing.hero_line2")}<br />
+              <span style={{ color: "#C9A84C" }}>{t("landing.hero_line3")}</span>
             </h1>
 
             <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 16, color: "rgba(245,240,232,0.6)", lineHeight: 1.8, margin: "0 0 40px", maxWidth: 440 }}>
-              Share one link on WhatsApp. Client uploads room photos. AI measures the space and generates a preview. You send a professional quote PDF with a Razorpay payment link. Done in minutes.
+              {t("landing.hero_para")}
             </p>
 
             <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 52 }}>
               <button onClick={openCarpenterLogin} style={{ display: "flex", alignItems: "center", gap: 9, background: "#C9A84C", color: "#1B3A2D", fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: 15, padding: "0 28px", height: 52, borderRadius: 4, border: "none", cursor: "pointer" }}>
-                Start free — 14 days <ArrowRight size={16} />
+                {t("landing.cta_start")} <ArrowRight size={16} />
               </button>
               <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "rgba(245,240,232,0.35)", lineHeight: 1.6 }}>
-                No card needed<br />₹299/mo after trial
+                {t("landing.cta_no_card")}<br />{t("landing.cta_price")}
               </div>
             </div>
 
             <div style={{ display: "flex", gap: 40, flexWrap: "wrap" }}>
               {[
-                { value: "₹0", label: "setup cost" },
-                { value: "< 5 min", label: "to send a quote" },
-                { value: "20,000+", label: "carpenters in India" },
+                { value: "₹0", label: t("landing.stat_setup") },
+                { value: "< 5 min", label: t("landing.stat_time") },
+                { value: "20,000+", label: t("landing.stat_carpenters") },
               ].map(({ value, label }) => (
                 <div key={label}>
                   <p style={{ fontFamily: '"DM Serif Display", serif', fontSize: 26, color: "#F5F0E8", margin: 0, lineHeight: 1.1 }}>{value}</p>
@@ -475,9 +475,9 @@ export default function Landing() {
       {/* ── How it works ─────────────────────────────────────────────────────── */}
       <section style={{ maxWidth: 820, margin: "0 auto", padding: "100px 28px" }}>
         <div style={{ marginBottom: 60 }}>
-          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(27,58,45,0.35)", margin: "0 0 12px" }}>How it works</p>
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(27,58,45,0.35)", margin: "0 0 12px" }}>{t("landing.how_label")}</p>
           <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: "clamp(30px, 4.5vw, 48px)", color: "#1B3A2D", margin: 0, lineHeight: 1.1, letterSpacing: "-0.01em" }}>
-            From WhatsApp link to<br />advance payment — this afternoon.
+            {t("landing.how_heading")}
           </h2>
         </div>
 
@@ -496,9 +496,9 @@ export default function Landing() {
 
         <div style={{ borderTop: "1px solid rgba(27,58,45,0.07)", marginTop: 8, paddingTop: 36, display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
           <button onClick={openCarpenterLogin} style={{ display: "flex", alignItems: "center", gap: 8, background: "#C9A84C", color: "#1B3A2D", fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: 14, padding: "0 24px", height: 48, borderRadius: 4, border: "none", cursor: "pointer" }}>
-            Try it free <ArrowRight size={14} />
+            {t("landing.try_free")} <ArrowRight size={14} />
           </button>
-          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: "rgba(74,85,104,0.45)" }}>14-day trial, no credit card</span>
+          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: "rgba(74,85,104,0.45)" }}>{t("landing.trial_ncc")}</span>
         </div>
       </section>
 
@@ -507,13 +507,13 @@ export default function Landing() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 28px" }}>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 48, flexWrap: "wrap", gap: 16 }}>
             <div>
-              <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(201,168,76,0.6)", margin: "0 0 12px" }}>Community</p>
+              <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(201,168,76,0.6)", margin: "0 0 12px" }}>{t("landing.community_label")}</p>
               <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: "clamp(28px, 4vw, 48px)", color: "#F5F0E8", margin: 0, lineHeight: 1.1 }}>
-                Mumbai's finest<br />craftsmen, all in one place.
+                {t("landing.community_heading")}
               </h2>
             </div>
             <Link to="/explore" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 600, color: "#C9A84C", textDecoration: "none", borderBottom: "1px solid rgba(201,168,76,0.4)", paddingBottom: 2 }}>
-              Browse all craftsmen <ArrowRight size={13} />
+              {t("landing.browse_all")} <ArrowRight size={13} />
             </Link>
           </div>
 
@@ -525,11 +525,11 @@ export default function Landing() {
 
           <div style={{ marginTop: 56, padding: "36px", background: "rgba(245,240,232,0.04)", border: "1px solid rgba(245,240,232,0.08)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
             <div>
-              <p style={{ fontFamily: '"DM Serif Display", serif', fontSize: 24, color: "#F5F0E8", margin: "0 0 6px" }}>Looking to renovate your home?</p>
-              <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: "rgba(245,240,232,0.5)", margin: 0 }}>Browse craftsmen, view their work, and request a quote — all in one place.</p>
+              <p style={{ fontFamily: '"DM Serif Display", serif', fontSize: 24, color: "#F5F0E8", margin: "0 0 6px" }}>{t("landing.homeowner_heading")}</p>
+              <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: "rgba(245,240,232,0.5)", margin: 0 }}>{t("landing.homeowner_desc")}</p>
             </div>
             <button onClick={openHomeownerLogin} style={{ display: "flex", alignItems: "center", gap: 9, background: "transparent", color: "#C9A84C", fontFamily: '"DM Sans", sans-serif', fontWeight: 600, fontSize: 14, padding: "0 24px", height: 48, borderRadius: 4, border: "1.5px solid rgba(201,168,76,0.4)", cursor: "pointer", whiteSpace: "nowrap" }}>
-              Find a craftsman <ArrowRight size={14} />
+              {t("landing.find_craftsman")} <ArrowRight size={14} />
             </button>
           </div>
         </div>
@@ -540,12 +540,12 @@ export default function Landing() {
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "100px 28px" }}>
           <div style={{ display: "flex", gap: 64, alignItems: "flex-start", flexWrap: "wrap" }}>
             <div style={{ flex: "1 1 280px" }}>
-              <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(27,58,45,0.35)", margin: "0 0 14px" }}>Pricing</p>
+              <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(27,58,45,0.35)", margin: "0 0 14px" }}>{t("landing.pricing_label")}</p>
               <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: "clamp(28px, 4vw, 44px)", color: "#1B3A2D", margin: "0 0 20px", lineHeight: 1.1 }}>
-                One plan.<br />Everything included.
+                {t("landing.pricing_heading")}
               </h2>
               <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: "#4A5568", lineHeight: 1.8, margin: 0, maxWidth: 300 }}>
-                No per-quote fees. No setup cost. No locked-in contracts. Pay month-to-month, cancel any time.
+                {t("landing.pricing_desc")}
               </p>
             </div>
 
@@ -554,9 +554,9 @@ export default function Landing() {
                 <div style={{ padding: "32px 32px 28px", borderBottom: "1px solid rgba(27,58,45,0.08)" }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
                     <span style={{ fontFamily: '"DM Serif Display", serif', fontSize: 56, color: "#1B3A2D", lineHeight: 1 }}>₹299</span>
-                    <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 15, color: "rgba(74,85,104,0.5)" }}>/month</span>
+                    <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 15, color: "rgba(74,85,104,0.5)" }}>{t("landing.per_month")}</span>
                   </div>
-                  <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: "rgba(74,85,104,0.55)", margin: 0 }}>14-day free trial — no card required to start</p>
+                  <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: "rgba(74,85,104,0.55)", margin: 0 }}>{t("landing.trial_start")}</p>
                 </div>
                 <div style={{ padding: "24px 32px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 28 }}>
@@ -570,7 +570,7 @@ export default function Landing() {
                     ))}
                   </div>
                   <button onClick={openCarpenterLogin} style={{ width: "100%", height: 50, background: "#1B3A2D", color: "#F5F0E8", fontFamily: '"DM Sans", sans-serif', fontWeight: 600, fontSize: 15, borderRadius: 4, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                    Start free trial <ArrowRight size={15} />
+                    {t("landing.start_trial_btn")} <ArrowRight size={15} />
                   </button>
                 </div>
               </div>
@@ -583,15 +583,15 @@ export default function Landing() {
       <section className="bg-grain" style={{ background: "#1B3A2D" }}>
         <div style={{ maxWidth: 820, margin: "0 auto", padding: "100px 28px", textAlign: "center" }}>
           <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: "clamp(34px, 5vw, 60px)", color: "#F5F0E8", margin: "0 0 20px", lineHeight: 1.08, letterSpacing: "-0.01em" }}>
-            Your first professional<br />quote, <span style={{ color: "#C9A84C" }}>this afternoon.</span>
+            {t("landing.final_heading_1")}<br />{t("landing.final_heading_2")} <span style={{ color: "#C9A84C" }}>{t("landing.final_heading_3")}</span>
           </h2>
           <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 15, color: "rgba(245,240,232,0.55)", margin: "0 0 40px" }}>
-            Set up in 5 minutes. No technical knowledge needed.
+            {t("landing.final_para")}
           </p>
           <button onClick={openCarpenterLogin} style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#C9A84C", color: "#1B3A2D", fontFamily: '"DM Sans", sans-serif', fontWeight: 700, fontSize: 16, padding: "0 36px", height: 56, borderRadius: 4, border: "none", cursor: "pointer" }}>
-            Get started — free <ArrowRight size={16} />
+            {t("landing.get_started_btn")} <ArrowRight size={16} />
           </button>
-          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "rgba(245,240,232,0.3)", marginTop: 16 }}>14-day trial · No card required · ₹299/mo after</p>
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "rgba(245,240,232,0.3)", marginTop: 16 }}>{t("landing.final_trial_note")}</p>
         </div>
       </section>
 
@@ -604,11 +604,11 @@ export default function Landing() {
           <span style={{ fontFamily: '"DM Serif Display", serif', color: "#1B3A2D", fontSize: 16 }}>CarpentrIQ</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <Link to="/explore" style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "rgba(74,85,104,0.5)", textDecoration: "none" }}>Explore craftsmen</Link>
-          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "rgba(74,85,104,0.35)" }}>© 2026 CarpentrIQ · Built for Indian carpenters</span>
+          <Link to="/explore" style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "rgba(74,85,104,0.5)", textDecoration: "none" }}>{t("landing.nav_explore")}</Link>
+          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "rgba(74,85,104,0.35)" }}>{t("landing.footer_built_for")}</span>
         </div>
         <button onClick={openCarpenterLogin} style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, color: "#1B3A2D", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
-          Carpenter login →
+          {t("landing.footer_login")}
         </button>
       </footer>
 
