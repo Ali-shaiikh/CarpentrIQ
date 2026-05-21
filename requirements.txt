@@ -12,6 +12,7 @@ opencv-python-headless==4.10.0.84
 numpy==1.26.4
 Pillow==10.4.0
 razorpay==1.4.1
+python-multipart==0.0.20
 anthropic==0.40.0
 resend==2.5.1
 weasyprint==63.0
