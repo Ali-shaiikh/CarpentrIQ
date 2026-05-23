@@ -141,7 +141,7 @@ function LoginModal({ mode, onClose }) {
               <p className="font-sans text-sm text-slate/60">
                 {isHomeowner
                   ? "Create a free account to browse craftsmen and request quotes."
-                  : "14-day free trial · No card required · ₹299/mo after"}
+                  : "7-day free trial · No card required · ₹299/mo after"}
               </p>
             </>
           ) : (
