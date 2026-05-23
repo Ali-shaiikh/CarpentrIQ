@@ -34,6 +34,7 @@ _INDIAN_MOBILE_RE = re.compile(r"^[6-9]\d{9}$")
 
 class SendOTPRequest(BaseModel):
     phone: str
+    email: str
 
     @field_validator("phone")
     @classmethod
@@ -41,6 +42,14 @@ class SendOTPRequest(BaseModel):
         v = v.strip()
         if not _INDIAN_MOBILE_RE.match(v):
             raise ValueError("Invalid Indian mobile number")
+        return v
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if "@" not in v or "." not in v.split("@")[-1]:
+            raise ValueError("Invalid email address")
         return v
 
 
@@ -82,20 +91,23 @@ async def send_otp(
     if carpenter is None:
         carpenter = Carpenter(
             phone=phone,
+            email=body.email,
             name="",
             plan="trial",
             trial_ends_at=datetime.now(timezone.utc) + timedelta(days=14),
         )
         db.add(carpenter)
-        await db.commit()
-        await db.refresh(carpenter)
-        logger.info("New carpenter created for phone %s", phone)
+    else:
+        carpenter.email = body.email
+
+    await db.commit()
+    await db.refresh(carpenter)
 
     otp = await auth_service.generate_otp(phone, redis)
-    await auth_service.send_otp_sms(phone, otp)
+    await auth_service.send_otp_email(body.email, otp)
 
     return SendOTPResponse(
-        message=f"OTP sent to +91{phone}",
+        message=f"OTP sent to {body.email}",
         expires_in_seconds=600,
     )
 

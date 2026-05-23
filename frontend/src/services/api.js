@@ -44,9 +44,9 @@ export default api;
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
-/** Send OTP to the carpenter's phone. */
-export async function sendOtp(phone) {
-  const res = await api.post("/auth/send-otp", { phone });
+/** Send OTP to the carpenter's email. */
+export async function sendOtp(phone, email) {
+  const res = await api.post("/auth/send-otp", { phone, email });
   return res.data;
 }
 

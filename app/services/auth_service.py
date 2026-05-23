@@ -57,31 +57,38 @@ class AuthService:
             _otp_fallback[phone] = (otp, expires)
         return otp
 
-    async def send_otp_sms(self, phone: str, otp: str) -> bool:
-        """Send OTP via 2Factor.in in production; log to console in development.
-
-        Never raises — logs errors and returns False on failure so auth flow continues.
-        """
+    async def send_otp_email(self, email: str, otp: str) -> bool:
+        """Send OTP via Resend email. Never raises — logs and returns False on failure."""
         if settings.app_env == "development":
-            logger.info("OTP for %s: %s", phone, otp)
+            logger.info("OTP for %s: %s", email, otp)
             return True
 
-        if not settings.twofactor_api_key:
-            logger.error("2Factor.in API key not configured — cannot send SMS")
+        if not settings.resend_api_key:
+            logger.error("Resend API key not configured — cannot send OTP email")
             return False
 
         try:
             async with httpx.AsyncClient(timeout=10) as client:
-                resp = await client.get(
-                    f"https://2factor.in/API/V1/{settings.twofactor_api_key}/SMS/{phone}/{otp}",
+                resp = await client.post(
+                    "https://api.resend.com/emails",
+                    json={
+                        "from": settings.resend_from_email,
+                        "to": [email],
+                        "subject": "Your CarpentrIQ login code",
+                        "html": (
+                            f"<p>Your CarpentrIQ login OTP is:</p>"
+                            f"<h2 style='letter-spacing:4px'>{otp}</h2>"
+                            f"<p>Valid for 10 minutes. Do not share this code.</p>"
+                        ),
+                    },
+                    headers={"Authorization": f"Bearer {settings.resend_api_key}"},
                 )
-                data = resp.json()
-                if data.get("Status") != "Success":
-                    logger.error("2Factor.in rejected OTP send for %s: %s", phone, data)
+                if resp.status_code not in (200, 201):
+                    logger.error("Resend rejected OTP email to %s: %s", email, resp.text)
                     return False
                 return True
         except Exception as exc:
-            logger.error("SMS send failed for %s: %s", phone, exc)
+            logger.error("OTP email send failed for %s: %s", email, exc)
             return False
 
     async def verify_otp(self, phone: str, submitted_otp: str, redis_client: Any) -> bool:

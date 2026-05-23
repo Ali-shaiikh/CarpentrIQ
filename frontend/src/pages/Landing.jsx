@@ -53,6 +53,8 @@ function LoginModal({ mode, onClose }) {
   const isHomeowner = mode === "homeowner";
   const [phone, setPhone] = useState("");
   const [phoneErr, setPhoneErr] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailErr, setEmailErr] = useState("");
   const [otpStep, setOtpStep] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpErr, setOtpErr] = useState("");
@@ -67,13 +69,16 @@ function LoginModal({ mode, onClose }) {
 
   async function handleSendOtp(e) {
     e.preventDefault();
-    if (!/^[6-9]\d{9}$/.test(phone)) { setPhoneErr("Enter a valid 10-digit Indian mobile number"); return; }
-    setPhoneErr(""); setBusy(true);
+    let valid = true;
+    if (!/^[6-9]\d{9}$/.test(phone)) { setPhoneErr("Enter a valid 10-digit Indian mobile number"); valid = false; } else { setPhoneErr(""); }
+    if (!isHomeowner && (!/\S+@\S+\.\S+/.test(email))) { setEmailErr("Enter a valid email address"); valid = false; } else { setEmailErr(""); }
+    if (!valid) return;
+    setBusy(true);
     try {
       if (isHomeowner) {
         await api.sendHomeownerOtp(phone);
       } else {
-        await api.sendOtp(phone);
+        await api.sendOtp(phone, email);
       }
       setOtpStep(true); setCountdown(30);
     } catch (err) {
@@ -102,7 +107,7 @@ function LoginModal({ mode, onClose }) {
     setBusy(true);
     try {
       if (isHomeowner) { await api.sendHomeownerOtp(phone); }
-      else { await api.sendOtp(phone); }
+      else { await api.sendOtp(phone, email); }
       setOtp(""); setOtpErr(""); setCountdown(30);
     } catch { setOtpErr("Could not resend OTP."); }
     finally { setBusy(false); }
@@ -143,7 +148,7 @@ function LoginModal({ mode, onClose }) {
             <>
               <h2 className="font-serif text-forest mb-1" style={{ fontSize: 22 }}>Enter the code</h2>
               <p className="font-sans text-sm text-slate/60">
-                Sent to +91 {phone} ·{" "}
+                Sent to {isHomeowner ? `+91 ${phone}` : email} ·{" "}
                 <button className="text-forest underline" onClick={() => { setOtpStep(false); setOtp(""); setOtpErr(""); }}>
                   change
                 </button>
@@ -170,6 +175,24 @@ function LoginModal({ mode, onClose }) {
               </div>
               {phoneErr && <p className="font-sans text-xs text-red-500 mt-1.5">{phoneErr}</p>}
             </div>
+            {!isHomeowner && (
+              <div>
+                <div
+                  className="flex items-center rounded-btn"
+                  style={{ border: emailErr ? "1.5px solid #EF4444" : "1.5px solid #E8E4DC", background: "#fff" }}
+                >
+                  <input
+                    type="email" inputMode="email"
+                    value={email} onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email address" autoComplete="email"
+                    className="flex-1 font-sans text-slate bg-transparent outline-none py-3.5 px-4 placeholder:text-slate/30"
+                    style={{ fontSize: 16 }}
+                  />
+                </div>
+                {emailErr && <p className="font-sans text-xs text-red-500 mt-1.5">{emailErr}</p>}
+                <p className="font-sans text-xs text-slate/40 mt-1.5">OTP will be sent to this email</p>
+              </div>
+            )}
             <button
               type="submit" disabled={busy}
               className="w-full h-12 text-parchment font-sans font-medium rounded-btn flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
