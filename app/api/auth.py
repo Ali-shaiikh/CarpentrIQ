@@ -94,7 +94,7 @@ async def send_otp(
             email=body.email,
             name="",
             plan="trial",
-            trial_ends_at=datetime.now(timezone.utc) + timedelta(days=14),
+            trial_ends_at=datetime.now(timezone.utc) + timedelta(days=7),
         )
         db.add(carpenter)
     else:
