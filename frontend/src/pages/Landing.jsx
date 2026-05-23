@@ -71,12 +71,12 @@ function LoginModal({ mode, onClose }) {
     e.preventDefault();
     let valid = true;
     if (!/^[6-9]\d{9}$/.test(phone)) { setPhoneErr("Enter a valid 10-digit Indian mobile number"); valid = false; } else { setPhoneErr(""); }
-    if (!isHomeowner && (!/\S+@\S+\.\S+/.test(email))) { setEmailErr("Enter a valid email address"); valid = false; } else { setEmailErr(""); }
+    if (!/\S+@\S+\.\S+/.test(email)) { setEmailErr("Enter a valid email address"); valid = false; } else { setEmailErr(""); }
     if (!valid) return;
     setBusy(true);
     try {
       if (isHomeowner) {
-        await api.sendHomeownerOtp(phone);
+        await api.sendHomeownerOtp(phone, email);
       } else {
         await api.sendOtp(phone, email);
       }
@@ -106,7 +106,7 @@ function LoginModal({ mode, onClose }) {
     if (countdown > 0) return;
     setBusy(true);
     try {
-      if (isHomeowner) { await api.sendHomeownerOtp(phone); }
+      if (isHomeowner) { await api.sendHomeownerOtp(phone, email); }
       else { await api.sendOtp(phone, email); }
       setOtp(""); setOtpErr(""); setCountdown(30);
     } catch { setOtpErr("Could not resend OTP."); }
@@ -175,24 +175,22 @@ function LoginModal({ mode, onClose }) {
               </div>
               {phoneErr && <p className="font-sans text-xs text-red-500 mt-1.5">{phoneErr}</p>}
             </div>
-            {!isHomeowner && (
-              <div>
-                <div
-                  className="flex items-center rounded-btn"
-                  style={{ border: emailErr ? "1.5px solid #EF4444" : "1.5px solid #E8E4DC", background: "#fff" }}
-                >
-                  <input
-                    type="email" inputMode="email"
-                    value={email} onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email address" autoComplete="email"
-                    className="flex-1 font-sans text-slate bg-transparent outline-none py-3.5 px-4 placeholder:text-slate/30"
-                    style={{ fontSize: 16 }}
-                  />
-                </div>
-                {emailErr && <p className="font-sans text-xs text-red-500 mt-1.5">{emailErr}</p>}
-                <p className="font-sans text-xs text-slate/40 mt-1.5">OTP will be sent to this email</p>
+            <div>
+              <div
+                className="flex items-center rounded-btn"
+                style={{ border: emailErr ? "1.5px solid #EF4444" : "1.5px solid #E8E4DC", background: "#fff" }}
+              >
+                <input
+                  type="email" inputMode="email"
+                  value={email} onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email address" autoComplete="email"
+                  className="flex-1 font-sans text-slate bg-transparent outline-none py-3.5 px-4 placeholder:text-slate/30"
+                  style={{ fontSize: 16 }}
+                />
               </div>
-            )}
+              {emailErr && <p className="font-sans text-xs text-red-500 mt-1.5">{emailErr}</p>}
+              <p className="font-sans text-xs text-slate/40 mt-1.5">OTP will be sent to this email</p>
+            </div>
             <button
               type="submit" disabled={busy}
               className="w-full h-12 text-parchment font-sans font-medium rounded-btn flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"

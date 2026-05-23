@@ -494,8 +494,8 @@ export async function getCarpenterDirectory() {
 
 // ── Homeowner auth ─────────────────────────────────────────────────────────────
 
-export async function sendHomeownerOtp(phone) {
-  const res = await api.post("/homeowner-auth/send-otp", { phone });
+export async function sendHomeownerOtp(phone, email) {
+  const res = await api.post("/homeowner-auth/send-otp", { phone, email });
   return res.data;
 }
 

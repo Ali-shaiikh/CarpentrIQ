@@ -50,6 +50,7 @@ def create_homeowner_token(homeowner_id: UUID) -> str:
 
 class SendOTPRequest(BaseModel):
     phone: str
+    email: str
 
     @field_validator("phone")
     @classmethod
@@ -57,6 +58,14 @@ class SendOTPRequest(BaseModel):
         v = v.strip()
         if not _INDIAN_MOBILE_RE.match(v):
             raise ValueError("Invalid Indian mobile number")
+        return v
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if "@" not in v or "." not in v.split("@")[-1]:
+            raise ValueError("Invalid email address")
         return v
 
 
@@ -79,18 +88,21 @@ async def send_otp(
     if homeowner is None:
         homeowner = Homeowner(
             phone=phone,
+            email=body.email,
             plan="trial",
-            trial_ends_at=datetime.now(timezone.utc) + timedelta(days=14),
+            trial_ends_at=datetime.now(timezone.utc) + timedelta(days=7),
         )
         db.add(homeowner)
-        await db.commit()
-        await db.refresh(homeowner)
-        logger.info("New homeowner created for phone %s", phone)
+    else:
+        homeowner.email = body.email
+
+    await db.commit()
+    await db.refresh(homeowner)
 
     otp = await auth_service.generate_otp(f"hw:{phone}", redis)
-    await auth_service.send_otp_sms(phone, otp)
+    await auth_service.send_otp_email(body.email, otp)
 
-    return {"message": f"OTP sent to +91{phone}", "expires_in_seconds": 600}
+    return {"message": f"OTP sent to {body.email}", "expires_in_seconds": 600}
 
 
 @router.post("/verify-otp")
