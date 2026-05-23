@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 TRIAL_DAILY_IMAGE_LIMIT = 5
+ADMIN_EMAILS = {"innovationfsn@gmail.com", "alishaikhh15@gmail.com"}
 
 
 class GenerateImageRequest(BaseModel):
@@ -49,7 +50,8 @@ async def generate_image(
 
     Trial accounts are limited to 5 images per day.
     """
-    if carpenter.plan == "trial":
+    is_admin = carpenter.email in ADMIN_EMAILS
+    if carpenter.plan == "trial" and not is_admin:
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         redis_key = f"img_count:{carpenter.id}:{today}"
         try:
@@ -72,7 +74,7 @@ async def generate_image(
         height=body.height,
     )
 
-    if carpenter.plan == "trial":
+    if carpenter.plan == "trial" and not is_admin:
         try:
             await redis.incr(redis_key)
             await redis.expire(redis_key, 86400)
