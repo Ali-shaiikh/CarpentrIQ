@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import logging
 from datetime import date, datetime, timezone
-from typing import Any
 
 import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
@@ -73,7 +72,7 @@ async def _enrich_job(job: Job, db: AsyncSession) -> dict:
 
     last_note_preview = None
     if notes:
-        lines = [l.strip() for l in notes.strip().splitlines() if l.strip()]
+        lines = [ln.strip() for ln in notes.strip().splitlines() if ln.strip()]
         for line in reversed(lines):
             if not line.startswith("["):
                 last_note_preview = line[:80] + ("…" if len(line) > 80 else "")

@@ -785,13 +785,6 @@ def build_edit_image_prompt(
     directly to gpt-image-1, so the prompt instructs it to use those exact pieces.
     """
     furniture_prompts, style = build_furniture_prompts(furniture_items, material_grade, reference_descriptions, selected_style)
-    room_finish_overrides = _ROOM_FINISHES.get(room_type or "")
-    finishes = (
-        room_finish_overrides.get(material_grade, room_finish_overrides.get("standard", ""))
-        if room_finish_overrides
-        else _GRADE_FINISHES.get(material_grade, _GRADE_FINISHES["standard"])
-    )
-
     # Resolve furniture description — always replace unless notes say otherwise.
     preserve = _preserve_furniture(notes)
     if not preserve:
@@ -905,9 +898,9 @@ def build_complete_image_prompt(
     dim_str = ""
     if dims:
         w = dims.get("width_mm") or dims.get("room_width_mm")
-        l = dims.get("length_mm") or dims.get("room_length_mm")
-        if w and l:
-            dim_str = f"{_mm_to_ft(w)} × {_mm_to_ft(l)}, "
+        length = dims.get("length_mm") or dims.get("room_length_mm")
+        if w and length:
+            dim_str = f"{_mm_to_ft(w)} × {_mm_to_ft(length)}, "
 
     furniture_prompts, style = build_furniture_prompts(furniture_items, material_grade, reference_descriptions, selected_style)
     furniture_desc = "; ".join(furniture_prompts) if furniture_prompts else "beautifully designed furniture"

@@ -336,7 +336,7 @@ export default function MyProfile() {
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1B3A2D", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <span style={{ fontFamily: '"DM Serif Display", serif', color: "#C9A84C", fontSize: 13 }}>
-                          {review.client_name[0].toUpperCase()}
+                          {(review.client_name?.[0] ?? "?").toUpperCase()}
                         </span>
                       </div>
                       <div>

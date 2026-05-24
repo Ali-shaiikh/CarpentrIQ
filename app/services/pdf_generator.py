@@ -90,7 +90,6 @@ def _build_html(
     q_number = escape(quote.get("quote_number") or "")
     client_name = escape(quote.get("client_name") or "")
     client_phone = escape(quote.get("client_phone") or "")
-    room_type = escape(quote.get("room_type") or "")
     notes = escape(quote.get("notes") or "")
     validity_days = quote.get("validity_days") or 7
     created_raw = quote.get("created_at")

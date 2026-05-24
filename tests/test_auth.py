@@ -20,6 +20,7 @@ from app.services.auth_service import auth_service
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 VALID_PHONE = "9876543210"
+VALID_EMAIL = "test@example.com"
 INVALID_PHONE = "1234567890"   # starts with 1 — not an Indian mobile
 
 
@@ -79,7 +80,7 @@ async def test_send_otp_valid_phone_creates_new_carpenter():
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             resp = await client.post(
-                "/api/v1/auth/send-otp", json={"phone": VALID_PHONE}
+                "/api/v1/auth/send-otp", json={"phone": VALID_PHONE, "email": VALID_EMAIL}
             )
     finally:
         app.dependency_overrides.pop(get_db, None)
@@ -87,7 +88,7 @@ async def test_send_otp_valid_phone_creates_new_carpenter():
 
     assert resp.status_code == 200
     body = resp.json()
-    assert f"+91{VALID_PHONE}" in body["message"]
+    assert VALID_EMAIL in body["message"]
     assert body["expires_in_seconds"] == 600
     mock_redis.set.assert_called_once()
     mock_db.add.assert_called_once()
@@ -122,7 +123,7 @@ async def test_send_otp_existing_carpenter_not_duplicated():
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             resp = await client.post(
-                "/api/v1/auth/send-otp", json={"phone": VALID_PHONE}
+                "/api/v1/auth/send-otp", json={"phone": VALID_PHONE, "email": VALID_EMAIL}
             )
     finally:
         app.dependency_overrides.pop(get_db, None)

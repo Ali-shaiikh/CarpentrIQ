@@ -115,7 +115,7 @@ async def health() -> dict:
         logger.warning("Health check — DB error: %s", exc)
 
     try:
-        r = aioredis.from_url(settings.redis_url, socket_connect_timeout=10)
+        r = aioredis.from_url(settings.redis_url, socket_connect_timeout=2, socket_timeout=2)
         await r.ping()
         await r.aclose()
         result["redis"] = "connected"

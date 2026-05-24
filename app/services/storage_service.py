@@ -10,7 +10,6 @@ Public URL:      {supabase_url}/storage/v1/object/public/{bucket}/{path}
 from __future__ import annotations
 
 import logging
-import mimetypes
 
 import httpx
 

@@ -144,9 +144,6 @@ class MaterialEstimator:
         redis_client: Any = None,
     ) -> MaterialEstimate:
         """Route to specific estimator. Raises ValueError for unknown item_type."""
-        base = item_type.split("_")[0] + "_" + item_type.split("_")[1] \
-            if "_" in item_type else item_type
-
         prices = await self._fetch_prices(city, material_grade, db_session, redis_client)
 
         if item_type.startswith("wardrobe"):
@@ -339,7 +336,7 @@ class MaterialEstimator:
             ("laminate_sqft",          round(laminate_sqft, 2), "sqft"),
             ("edge_banding_pvc",       round(edge_banding_m, 2), "metre"),
         ])
-        material_cost = sum(l.total for l in lines)
+        material_cost = sum(line.total for line in lines)
 
         notes = (
             f"{door_type.title()} door, "
@@ -415,7 +412,7 @@ class MaterialEstimator:
             ("laminate_sqft",     round(laminate_sqft, 2),  "sqft"),
             ("edge_banding_pvc",  round(edge_banding_m, 2), "metre"),
         ])
-        material_cost = sum(l.total for l in lines)
+        material_cost = sum(line.total for line in lines)
         notes = f"{'With' if has_wall else 'No'} wall unit, {num_shutters} shutters"
         dims = format_dimensions(w, base_h, base_d)
 
@@ -431,8 +428,6 @@ class MaterialEstimator:
         num_base_shutters = config.get("num_base_shutters", math.ceil(base_len / 600) * 2)
         num_wall_shutters = config.get("num_wall_shutters", math.ceil(wall_len / 600) * 2)
         num_drawers = config.get("num_drawers", 3)
-        num_baskets = config.get("num_baskets", math.ceil(base_len / 600))
-
         base_h = 870
         base_d = DEFAULT_DEPTH_KITCHEN_BASE
         wall_h = 600
@@ -495,7 +490,7 @@ class MaterialEstimator:
             ("laminate_sqft",     round(laminate_sqft, 2),  "sqft"),
             ("edge_banding_pvc",  round(edge_banding_m, 2), "metre"),
         ])
-        material_cost = sum(l.total for l in lines)
+        material_cost = sum(line.total for line in lines)
         notes = (
             f"{layout.replace('_', '-').title()} kitchen. "
             f"Countertop not included (separate quote)."
@@ -554,7 +549,7 @@ class MaterialEstimator:
             ("laminate_sqft",     round(laminate_sqft, 2),  "sqft"),
             ("edge_banding_pvc",  round(edge_banding_m, 2), "metre"),
         ])
-        material_cost = sum(l.total for l in lines)
+        material_cost = sum(line.total for line in lines)
         notes = f"{'With' if has_bookshelf else 'No'} bookshelf, {num_drawers} drawers"
         dims = format_dimensions(w, table_h + (shelf_h if has_bookshelf else 0), d)
 
@@ -572,23 +567,22 @@ class MaterialEstimator:
         }
         bed_size = config.get("bed_size", "queen")
         storage_type = config.get("storage_type", "hydraulic")
-        w, l = BED_DIMS.get(bed_size, BED_DIMS["queen"])
+        w, length = BED_DIMS.get(bed_size, BED_DIMS["queen"])
         box_h = 400  # box frame height (below mattress)
 
         # Box frame: 2 sides + headboard + footboard
         plywood_area = (
-            2 * (l * box_h)    # long sides
-            + 2 * (w * box_h)  # head + foot
-            + w * l            # base panel (plywood)
+            2 * (length * box_h)    # long sides
+            + 2 * (w * box_h)       # head + foot
+            + w * length            # base panel (plywood)
         )
-        back_area = 0  # no MDF back needed
 
         plywood_sheets = math.ceil((plywood_area / SHEET_AREA_MM2) * 1.15)
         mdf_sheets = 1  # headboard facing panel
 
-        exterior_area_mm2 = 2 * (l * box_h) + 2 * (w * box_h)
+        exterior_area_mm2 = 2 * (length * box_h) + 2 * (w * box_h)
         laminate_sqft = (exterior_area_mm2 / MM2_PER_SQFT) * 1.15
-        edge_banding_m = (2 * (l + box_h) + 2 * (w + box_h)) / 1000
+        edge_banding_m = (2 * (length + box_h) + 2 * (w + box_h)) / 1000
 
         hydraulic = 0
         drawer_slides = 0
@@ -602,7 +596,7 @@ class MaterialEstimator:
             drawer_slides = num_drawers * 2
             handles = num_drawers
 
-        total_sqft = (w * l) / (1_000 * 1_000) * 10.764
+        total_sqft = (w * length) / (1_000 * 1_000) * 10.764
 
         items = [
             ("plywood_bwp_8x4",   plywood_sheets,           "sheet"),
@@ -618,9 +612,9 @@ class MaterialEstimator:
             items.append(("handle_stainless", handles, "piece"))
 
         lines = _build_lines(prices, items)
-        material_cost = sum(l.total for l in lines)
+        material_cost = sum(line.total for line in lines)
         notes = f"{bed_size.title()} bed, {storage_type} storage"
-        dims = format_dimensions(w, box_h, l)
+        dims = format_dimensions(w, box_h, length)
 
         return _make_estimate("bed", material_cost, lines, total_sqft, notes, dims)
 

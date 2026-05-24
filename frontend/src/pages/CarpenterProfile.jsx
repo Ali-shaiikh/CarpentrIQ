@@ -348,7 +348,7 @@ export default function CarpenterProfile() {
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
                       <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#1B3A2D", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <span style={{ fontFamily: '"DM Serif Display", serif', color: "#C9A84C", fontSize: 16 }}>{review.client_name[0].toUpperCase()}</span>
+                        <span style={{ fontFamily: '"DM Serif Display", serif', color: "#C9A84C", fontSize: 16 }}>{(review.client_name?.[0] ?? "?").toUpperCase()}</span>
                       </div>
                       <div>
                         <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 14, fontWeight: 600, color: "#1B3A2D", margin: 0 }}>{review.client_name}</p>

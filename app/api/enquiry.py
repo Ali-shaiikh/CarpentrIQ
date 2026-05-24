@@ -115,7 +115,7 @@ async def get_client_form(
 
     cat_result = await db.execute(
         select(FurnitureCatalogue)
-        .where(FurnitureCatalogue.is_active == True)
+        .where(FurnitureCatalogue.is_active)
         .order_by(FurnitureCatalogue.sort_order)
     )
     catalogue = cat_result.scalars().all()

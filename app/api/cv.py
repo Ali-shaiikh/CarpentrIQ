@@ -23,25 +23,17 @@ from app.ml.room_analyser import RoomAnalyser
 from app.models.carpenter import Carpenter
 from app.models.enquiry import CVResult, Enquiry, EnquiryPhoto
 from app.services.auth_service import auth_service
-import base64
-import hashlib
 
-from app.config import settings
-from app.services.fal_service import edit_room_image_kontext, generate_room_image_ideogram
+from app.services.fal_service import edit_room_image_kontext
 from app.services.furniture_prompt_builder import (
     build_complete_image_prompt,
-    build_edit_image_prompt,
-    build_ideogram_prompt,
-    build_interior_design_prompt,
     build_kontext_edit_prompt,
 )
 from app.services.image_generation_service import (
     describe_furniture_from_image,
-    edit_room_image,
     generate_room_image,
 )
-from app.services.replicate_service import edit_room_interior_design, generate_with_furniture_reference, gpt_image_2
-from app.services.storage_service import storage_service
+from app.services.replicate_service import gpt_image_2
 from app.services.trial_subscription_service import (
     check_regenerate_cost,
     increment_regenerate,

@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.models.carpenter import Carpenter
 from app.models.subscription import SubscriptionHistory
-from app.services.trial_subscription_service import PLAN_LIMITS, PLAN_PRICES_INR, reset_monthly_quotas
+from app.services.trial_subscription_service import PLAN_PRICES_INR, reset_monthly_quotas
 
 logger = logging.getLogger(__name__)
 
@@ -159,8 +159,6 @@ async def process_renewal_webhook(payload: dict, db: AsyncSession) -> None:
     # Derive plan from subscription notes or current carpenter plan
     notes = sub_entity.get("notes", {})
     plan_name = notes.get("plan_name") or carpenter.subscription_plan or "basic"
-
-    limits = PLAN_LIMITS.get(plan_name, PLAN_LIMITS["basic"])
 
     carpenter.subscription_plan = plan_name
     carpenter.plan              = plan_name

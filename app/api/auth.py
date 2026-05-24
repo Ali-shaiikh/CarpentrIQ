@@ -8,6 +8,7 @@ Endpoints:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 from datetime import datetime, timedelta, timezone
@@ -104,7 +105,7 @@ async def send_otp(
     await db.refresh(carpenter)
 
     otp = await auth_service.generate_otp(phone, redis)
-    await auth_service.send_otp_email(body.email, otp)
+    asyncio.create_task(auth_service.send_otp_email(body.email, otp))
 
     return SendOTPResponse(
         message=f"OTP sent to {body.email}",

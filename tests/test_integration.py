@@ -33,6 +33,7 @@ from app.ml.room_analyser import RoomAnalysisResult
 from app.models.material import Job
 
 TEST_PHONE = "9876543210"
+TEST_EMAIL = "integration-test@example.com"
 TEST_SLUG = "test-carpenter-integration"
 
 
@@ -76,7 +77,7 @@ async def test_full_happy_path(async_client, fake_redis, db_session):
     # ── Step 1: Send OTP ─────────────────────────────────────────────────────
     resp = await async_client.post(
         "/api/v1/auth/send-otp",
-        json={"phone": TEST_PHONE},
+        json={"phone": TEST_PHONE, "email": TEST_EMAIL},
     )
     assert resp.status_code == 200, f"send-otp failed: {resp.text}"
     assert "OTP sent" in resp.json()["message"]

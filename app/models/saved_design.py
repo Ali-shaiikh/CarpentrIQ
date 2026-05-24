@@ -1,7 +1,7 @@
 """SavedDesign — a carpenter's pinned room design for reuse across views."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import TIMESTAMP, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID

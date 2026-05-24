@@ -31,7 +31,7 @@ def _to_dict(item: FurnitureCatalogue) -> dict:
 async def list_catalogue(db: AsyncSession = Depends(get_db)) -> list:
     result = await db.execute(
         select(FurnitureCatalogue)
-        .where(FurnitureCatalogue.is_active == True)
+        .where(FurnitureCatalogue.is_active)
         .order_by(FurnitureCatalogue.sort_order)
     )
     return [_to_dict(item) for item in result.scalars().all()]

@@ -20,11 +20,10 @@ from app.database import get_db
 from app.models.carpenter import Carpenter
 from app.services.auth_service import auth_service
 from app.services.razorpay_subscription_service import (
-    PlanType,
     cancel_subscription,
     create_subscription,
 )
-from app.services.trial_subscription_service import PLAN_LIMITS, PLAN_PRICES_INR
+from app.services.trial_subscription_service import PLAN_PRICES_INR
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -40,7 +39,6 @@ async def get_usage(
 ) -> dict:
     """Private (JWT) — return this month's usage stats for the current carpenter."""
     plan = carpenter.subscription_plan or carpenter.plan or "free_trial"
-    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["free_trial"])
     price_inr = PLAN_PRICES_INR.get(plan, 0)
 
     paid_regenerates = max(
