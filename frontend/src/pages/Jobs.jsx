@@ -311,9 +311,9 @@ function JobCard({ job: initialJob, onJobUpdated }) {
 
         {/* Row 2: furniture chips */}
         {(job.furniture_list ?? []).length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-2">
+          <div className="flex flex-wrap gap-2 mb-2">
             {job.furniture_list.slice(0, 3).map((f) => (
-              <span key={f} className="font-sans text-xs bg-mist text-slate px-2 py-0.5 rounded-btn capitalize">
+              <span key={f} className="font-sans text-xs bg-mist text-slate px-3 py-1 rounded-btn capitalize">
                 {f.replace(/_/g, " ")}
               </span>
             ))}

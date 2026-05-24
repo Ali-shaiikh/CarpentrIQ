@@ -95,7 +95,7 @@ export default function Enquiries() {
               <button
                 key={s}
                 onClick={() => setActiveTab(s)}
-                className="flex-shrink-0 flex items-center gap-1.5 font-sans text-sm px-3 h-8 rounded-btn border transition-colors duration-150"
+                className="flex-shrink-0 flex items-center gap-1.5 font-sans text-sm px-3 h-10 rounded-btn border transition-colors duration-150"
                 style={{
                   background: isActive ? "#1B3A2D" : "#fff",
                   color: isActive ? "#F5F0E8" : "#4A5568",

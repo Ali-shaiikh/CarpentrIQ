@@ -59,7 +59,7 @@ function TrialBanner({ carpenter, onUpgrade }) {
 
   if (isUrgent) {
     return (
-      <div style={{ margin: "0 24px 0", background: "#7C2D12", borderRadius: 8, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div style={{ margin: "0 16px 0", background: "#7C2D12", borderRadius: 8, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Zap size={14} color="#FCA5A5" />
           <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, fontWeight: 500, color: "#FCA5A5", margin: 0 }}>
@@ -74,7 +74,7 @@ function TrialBanner({ carpenter, onUpgrade }) {
   }
 
   return (
-    <div style={{ margin: "0 24px 0", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 8, padding: "11px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+    <div style={{ margin: "0 16px 0", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 8, padding: "11px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
       <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: "#92400E", margin: 0 }}>
         {t("dashboard.trial_days_left", { n: daysLeft })}
       </p>
@@ -96,7 +96,7 @@ function StatCard({ label, value, sub, isPrice, icon: Icon, accent, gold }) {
     <div style={{
       background: "#fff",
       borderRadius: 12,
-      padding: "22px 24px",
+      padding: "18px 16px",
       border: gold ? "1.5px solid rgba(201,168,76,0.3)" : "1px solid rgba(27,58,45,0.07)",
       boxShadow: gold ? "0 2px 16px rgba(201,168,76,0.08)" : "0 2px 8px rgba(27,58,45,0.06)",
       position: "relative",
@@ -119,7 +119,7 @@ function StatCard({ label, value, sub, isPrice, icon: Icon, accent, gold }) {
             ₹{Number(value ?? 0).toLocaleString("en-IN")}
           </p>
         ) : (
-          <p style={{ fontFamily: '"DM Serif Display", serif', fontSize: 44, color: "#1B3A2D", margin: 0, lineHeight: 1 }} className="stat-number">
+          <p style={{ fontFamily: '"DM Serif Display", serif', fontSize: "clamp(32px, 5vw, 44px)", color: "#1B3A2D", margin: 0, lineHeight: 1 }} className="stat-number">
             {value ?? "0"}
           </p>
         )}
@@ -161,10 +161,10 @@ function QuoteLinkBox({ slug }) {
           {url}
         </p>
         <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-          <button onClick={copyLink} style={{ display: "flex", alignItems: "center", gap: 6, height: 36, padding: "0 14px", background: "transparent", border: "1.5px solid #E8E4DC", borderRadius: 4, fontFamily: '"DM Sans", sans-serif', fontSize: 12, fontWeight: 500, color: copied ? "#16a34a" : "#4A5568", cursor: "pointer" }}>
+          <button onClick={copyLink} style={{ display: "flex", alignItems: "center", gap: 6, height: 44, padding: "0 14px", background: "transparent", border: "1.5px solid #E8E4DC", borderRadius: 4, fontFamily: '"DM Sans", sans-serif', fontSize: 12, fontWeight: 500, color: copied ? "#16a34a" : "#4A5568", cursor: "pointer" }}>
             {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? t("common.copied") : t("common.copy_link")}
           </button>
-          <button onClick={shareWhatsApp} style={{ display: "flex", alignItems: "center", gap: 6, height: 36, padding: "0 14px", background: "#25D366", border: "none", borderRadius: 4, fontFamily: '"DM Sans", sans-serif', fontSize: 12, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
+          <button onClick={shareWhatsApp} style={{ display: "flex", alignItems: "center", gap: 6, height: 44, padding: "0 14px", background: "#25D366", border: "none", borderRadius: 4, fontFamily: '"DM Sans", sans-serif', fontSize: 12, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
             <Share2 size={12} /> WhatsApp
           </button>
         </div>
@@ -376,7 +376,7 @@ export default function Dashboard() {
       <UpgradeModal isOpen={showUpgrade} onClose={() => setShowUpgrade(false)} carpenter={carpenter} onSuccess={loadData} />
 
       {/* Page header */}
-      <div className="bg-grain" style={{ background: "#1B3A2D", padding: "32px 28px 28px" }}>
+      <div className="bg-grain" style={{ background: "#1B3A2D", padding: "28px 16px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 11, color: "rgba(245,240,232,0.35)", margin: "0 0 6px", letterSpacing: "0.04em" }}>{todayStr()}</p>
           <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: "clamp(26px, 3.5vw, 36px)", color: "#F5F0E8", margin: 0, lineHeight: 1.1 }}>
@@ -391,10 +391,10 @@ export default function Dashboard() {
         <TrialBanner carpenter={carpenter} onUpgrade={() => setShowUpgrade(true)} />
       </div>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 24px 0" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 16px 0" }}>
 
         {/* Stat grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 12, marginBottom: 20 }}>
           <StatCard label={t("dashboard.stat_revenue")} value={revenue} isPrice icon={TrendingUp} gold accent="rgba(201,168,76,0.1)" />
           <StatCard label={t("dashboard.stat_enquiries")} value={enquiryStats.total ?? 0} icon={Inbox} sub={t("dashboard.stat_this_week", { n: enquiryStats.new_this_week ?? 0 })} />
           <StatCard label={t("dashboard.stat_quotes")} value={carpenter?.total_quotes_sent ?? 0} icon={FileText} />
