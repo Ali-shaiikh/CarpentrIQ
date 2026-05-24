@@ -616,6 +616,60 @@ _KONTEXT_FINISHES = {
 }
 
 
+_ITEM_TYPE_LABELS: dict[str, str] = {
+    "bed": "bed",
+    "storage_bed": "storage bed",
+    "wardrobe": "wardrobe",
+    "wardrobe_sliding_2door": "sliding wardrobe",
+    "wardrobe_hinged_3door": "hinged wardrobe",
+    "sofa": "sofa",
+    "tv_unit": "TV unit",
+    "tv_unit_floor": "floor TV unit",
+    "kitchen": "modular kitchen",
+    "kitchen_l_shape": "L-shape kitchen",
+    "dining_table_set": "dining table and chairs",
+    "study": "study table",
+    "study_table": "study table",
+    "dressing_table": "dressing table",
+    "chest_of_drawers": "chest of drawers",
+    "bookshelf_unit": "bookshelf",
+    "crockery_unit": "crockery unit",
+    "shoe_cabinet": "shoe cabinet",
+    "console_unit": "console table",
+    "pooja_unit": "pooja unit",
+    "vanity_unit": "vanity unit",
+    "mirror_cabinet": "mirror cabinet",
+    "bathroom_linen_tower": "linen tower",
+    "balcony_seating": "balcony seating",
+    "planter_box": "planter boxes",
+    "pantry_unit": "pantry unit",
+    "buffet_sideboard": "buffet sideboard",
+    "wall_shelf": "wall shelves",
+}
+
+_ROOM_LABELS: dict[str, str] = {
+    "bedroom": "bedroom",
+    "living":  "living room",
+    "kitchen": "kitchen",
+    "dining":  "dining room",
+    "study":   "study",
+    "bathroom":"bathroom",
+    "balcony": "balcony",
+    "pooja":   "pooja room",
+    "foyer":   "entrance foyer",
+    "passage": "passage",
+}
+
+
+def _furniture_label_list(furniture_items: list[dict]) -> str:
+    names = [
+        _ITEM_TYPE_LABELS.get(item.get("item_type", ""), item.get("item_type", "").replace("_", " "))
+        for item in furniture_items
+        if item.get("item_type")
+    ]
+    return ", ".join(names)
+
+
 def build_kontext_edit_prompt(
     room_type: str,
     furniture_items: list[dict],
@@ -624,143 +678,43 @@ def build_kontext_edit_prompt(
     mood_description: str = "",
     selected_style: str | None = None,
     has_furniture_reference: bool = False,
+    scraped_image_indices: dict[int, int] | None = None,
+    notes_image_indices: list[tuple[str, int]] | None = None,
 ) -> str:
-    """Full interior transformation prompt for FLUX Kontext Pro.
+    """Build the transformation prompt.
 
-    Describes the COMPLETE desired room — walls, ceiling, flooring, and furniture
-    all redesigned. Only the structural geometry is preserved: room footprint,
-    window openings, door openings, and camera angle.
-    Pair with guidance_scale=6.5 so Kontext actually overrides all surfaces.
+    scraped_image_indices  — {item_index: image_pos} for button-selected furniture
+    notes_image_indices    — [(label, image_pos)] for furniture mentioned in notes text
+    Image positions are 1-indexed; Image 1 is always the room photo.
     """
-    room_labels = {
-        "bedroom": "Indian bedroom",
-        "living":  "Indian living room",
-        "kitchen": "Indian modular kitchen",
-        "dining":  "Indian dining room",
-        "study":   "Indian home study",
-        "bathroom":"Indian bathroom",
-        "balcony": "Indian apartment balcony",
-        "pooja":   "Indian pooja room",
-        "foyer":   "Indian home entrance foyer",
-        "passage": "Indian home passage / corridor",
-    }
-    room_label = room_labels.get(room_type or "living", f"Indian {room_type} room")
+    room_label = _ROOM_LABELS.get(room_type or "living", room_type or "living room")
 
-    if has_furniture_reference:
-        # Reference placement mode — the user provided a specific furniture image.
-        # Rule: constraints first, transformation last. The model reads left-to-right;
-        # if transformation intent leads, it redesigns everything and ignores preservations.
-
-        # Resolve the specific piece name from furniture_items so the prompt is concrete.
-        _type_labels = {
-            "bed": "bed", "storage_bed": "bed",
-            "wardrobe": "wardrobe",
-            "sofa": "sofa",
-            "tv_unit": "TV unit",
-            "kitchen": "kitchen",
-            "dining_table_set": "dining table",
-            "study": "study table", "study_table": "study table",
-            "dressing_table": "dressing table",
-            "chest_of_drawers": "chest of drawers",
-            "bookshelf_unit": "bookshelf unit",
-            "crockery_unit": "crockery unit",
-            "shoe_cabinet": "shoe cabinet",
-            "console_unit": "console table",
-            "pooja_unit": "pooja unit",
-            "vanity_unit": "vanity unit",
-        }
-        piece_name = "furniture piece"
-        if furniture_items:
-            piece_name = _type_labels.get(furniture_items[0].get("item_type", ""), "furniture piece")
-
-        known_piece = piece_name != "furniture piece"
-
-        parts = [f"Targeted edit of an existing {room_label} photo"]
-
-        if known_piece:
-            # Specific piece selected — surgical swap, everything else pixel-accurate.
-            parts += [
-                "DO NOT CHANGE: ceiling structure, ceiling height, wall colour, wall finish, "
-                "window positions, door positions, floor material, room proportions, or any existing furniture "
-                "that is not being replaced — keep them pixel-accurate to Image 1",
-                f"ONLY CHANGE: replace the {piece_name} with the exact {piece_name} shown in Image 2 — "
-                "match its colour, material, wood finish, and design precisely. "
-                "Do not substitute with a modern or different style",
-            ]
-        else:
-            # No specific piece selected — reference image sets the style direction.
-            # Still redesign the furniture and surfaces, just keep room structure intact.
-            parts += [
-                "DO NOT CHANGE: ceiling structure, ceiling height, window positions, door positions, "
-                "room proportions — keep them pixel-accurate to Image 1",
-                "Use Image 2 as the design direction: redesign the furniture and interior surfaces "
-                "(walls, flooring) to match its style, colour palette, and material aesthetic. "
-                "Generate unique premium furniture — not generic standard designs",
-            ]
-
-        if notes:
-            parts.append(
-                f"Client context (apply only to the visible room space — "
-                f"do not render anything beyond doorways based on these notes): {notes}"
-            )
-        parts.append("Photorealistic result, no people")
-        return ". ".join(parts)
-
-    # Full transformation mode — no reference image, free to redesign everything.
-    finish_options = _KONTEXT_FINISHES.get(material_grade, _KONTEXT_FINISHES["standard"])
-    finishes = random.choice(finish_options)
-
-    furniture_prompts, style = build_furniture_prompts(furniture_items, material_grade, selected_style=selected_style)
-    preserve = _preserve_furniture(notes)
-
-    if not preserve:
-        if furniture_prompts:
-            furniture_desc = "; ".join(furniture_prompts)
-        else:
-            room_keys = _ROOM_STYLE_KEYS.get(room_type or "living", [])
-            default_pieces = [style[k] for k in room_keys if k in style]
-            furniture_desc = "; ".join(default_pieces) if default_pieces else f"premium designer {room_label} furniture"
-    else:
-        furniture_desc = None
-
-    style_clause = mood_description[:150] if mood_description else style["vision"]
-
-    # Constraints FIRST — the model reads left-to-right; leading with structure preservation
-    # prevents it from inventing new doors/windows or shifting the camera before it sees the
-    # transformation instructions.
     parts = [
-        "CRITICAL — preserve exactly: camera angle, viewpoint, room proportions, "
-        "and the exact position and size of every existing window, door, archway, and passage. "
-        "Do NOT add, move, or remove any architectural openings. "
-        "Doorways and openings connect to other rooms that are OFF-CAMERA — treat them as dark "
-        "voids or shadowed openings; do NOT render, imply, or show any furniture or room interior beyond them",
-        f"Complete luxury interior redesign of this {room_label}",
+        f"Complete transformation of this {room_label} — remove all existing furniture, decor, and finishes and start entirely fresh",
     ]
+
+    include_refs: list[str] = []
+
+    # Button-selected items with optional image references
+    if furniture_items:
+        for i, item in enumerate(furniture_items):
+            label = _ITEM_TYPE_LABELS.get(item.get("item_type", ""), item.get("item_type", "").replace("_", " "))
+            img_pos = (scraped_image_indices or {}).get(i)
+            if img_pos:
+                include_refs.append(f"{label} (use Image {img_pos} as reference)")
+            else:
+                include_refs.append(label)
+
+    # Notes-mentioned furniture with image references
+    if notes_image_indices:
+        for label, img_pos in notes_image_indices:
+            include_refs.append(f"{label} (use Image {img_pos} as reference)")
+
+    if include_refs:
+        parts.append(f"Include: {', '.join(include_refs)}")
 
     if notes:
-        parts.append(
-            f"Client context about this space (use only to understand the room — "
-            f"redesign only what is physically visible in this photo, not spaces mentioned beyond doorways): {notes}"
-        )
-
-    parts += [
-        f"Design style: {style_clause}",
-        f"Surfaces: {finishes}",
-        "False ceiling with cove LED lighting and recessed spotlights",
-    ]
-
-    if furniture_desc is not None:
-        parts.append(f"Furniture: {furniture_desc}")
-        parts.append(
-            "Every furniture piece must have a distinctive, custom-designed silhouette — "
-            "unique proportions, unusual material combinations, bespoke detailing. "
-            "Avoid generic catalogue furniture; make it look one-of-a-kind and architect-specified"
-        )
-
-    parts += [
-        "Redesign all interior surfaces: wall treatment, flooring, ceiling design, and all furniture",
-        "Photorealistic interior photography, high quality, no people",
-    ]
+        parts.append(notes)
 
     return ". ".join(parts)
 
@@ -775,63 +729,18 @@ def build_edit_image_prompt(
     has_visual_references: bool = False,
     selected_style: str | None = None,
 ) -> str:
-    """Build a gpt-image-1 prompt for complete interior transformation visualization.
+    room_label = _ROOM_LABELS.get(room_type or "living", room_type or "living room")
+    parts = [
+        f"Complete transformation of this {room_label} — remove all existing furniture, decor, and finishes and start entirely fresh",
+    ]
 
-    The carpenter uploads a room photo and wants to show the client a dramatic,
-    magazine-worthy redesign — walls, flooring, ceiling, lighting, and furniture
-    all completely transformed. This is the core value proposition.
-
-    has_visual_references: when True, the additional reference images are passed
-    directly to gpt-image-1, so the prompt instructs it to use those exact pieces.
-    """
-    furniture_prompts, style = build_furniture_prompts(furniture_items, material_grade, reference_descriptions, selected_style)
-    # Resolve furniture description — always replace unless notes say otherwise.
-    preserve = _preserve_furniture(notes)
-    if not preserve:
-        if furniture_prompts:
-            furniture_desc = "; ".join(furniture_prompts)
-        else:
-            room_keys = _ROOM_STYLE_KEYS.get(room_type or "living", [])
-            default_pieces = [style[k] for k in room_keys if k in style]
-            furniture_desc = "; ".join(default_pieces) if default_pieces else ""
-    else:
-        furniture_desc = None  # explicit signal to skip furniture instructions
-
-    # Only furniture changes — all surfaces and structure stay exactly as-is
-    parts = []
-
-    if furniture_desc is not None:
-        parts.append("Remove all existing furniture, ceiling fans, and loose decor items")
-        if furniture_desc:
-            parts.append(
-                f"Place these furniture pieces naturally in the cleared space: {furniture_desc}"
-            )
-        else:
-            parts.append(
-                f"Place appropriate premium furniture for a {room_type or 'living'} room "
-                "naturally in the cleared space"
-            )
-
-    if has_visual_references:
-        parts.append(
-            "The reference images show the exact furniture style to use — "
-            "match that aesthetic for the new pieces"
-        )
-    elif mood_description:
-        parts.append(f"Furniture style reference: {mood_description}")
+    if furniture_items:
+        labels = _furniture_label_list(furniture_items)
+        if labels:
+            parts.append(f"Include: {labels}")
 
     if notes:
-        parts.append(
-            f"Client context (redesign only what is visible in this photo — "
-            f"do not render spaces or rooms mentioned as being beyond doorways): {notes}"
-        )
-
-    parts += [
-        "Keep all existing walls, ceiling, floor, doors, windows, passages, and archways "
-        "exactly as they appear in the original photo — do not change any surfaces or structure. "
-        "Doorways are architectural openings only — do NOT render what lies beyond them",
-        "Photorealistic result, same lighting and camera angle as the original, no people",
-    ]
+        parts.append(notes)
 
     return ". ".join(parts)
 
@@ -884,57 +793,21 @@ def build_complete_image_prompt(
     mood_description: str = "",
     selected_style: str | None = None,
 ) -> str:
-    """Build a DALL-E 3 prompt for a COMPLETE ROOM TRANSFORMATION — not isolated furniture.
+    room_label = _ROOM_LABELS.get(room_type or "living", room_type or "living room")
 
-    The prompt describes every element of the room together: furniture, walls,
-    flooring, lighting, decor, and ambience — all visually coordinated.
+    parts = [
+        f"Complete transformation of this {room_label} — remove all existing furniture, decor, and finishes and start entirely fresh",
+    ]
 
-    When room_description is provided (from Claude Haiku vision of an uploaded photo),
-    the prompt is anchored to the real room's permanent features so DALL-E 3 generates
-    a design that matches the actual walls, flooring, and light of that space.
-    """
-    room_ctx = ROOM_CONTEXT.get(room_type or "", ROOM_CONTEXT["living"])
+    if furniture_items:
+        labels = _furniture_label_list(furniture_items)
+        if labels:
+            parts.append(f"Include: {labels}")
 
-    dim_str = ""
-    if dims:
-        w = dims.get("width_mm") or dims.get("room_width_mm")
-        length = dims.get("length_mm") or dims.get("room_length_mm")
-        if w and length:
-            dim_str = f"{_mm_to_ft(w)} × {_mm_to_ft(length)}, "
-
-    furniture_prompts, style = build_furniture_prompts(furniture_items, material_grade, reference_descriptions, selected_style)
-    furniture_desc = "; ".join(furniture_prompts) if furniture_prompts else "beautifully designed furniture"
-    style_vision = style["vision"]
-
-    if room_description:
-        prompt_parts = [
-            f"Complete luxury redesign of a real {room_type or 'living'} room — dramatic magazine-worthy transformation",
-            f"Room geometry to keep: {room_description} — preserve only the floor plan shape, window openings, door openings, and camera angle",
-            "COMPLETELY REPLACE: all wall surfaces with rich new treatment, ceiling with false ceiling and cove LED lighting, flooring with premium new material, and remove all existing furniture and fans",
-            f"Design vision: {style_vision}",
-            f"New furniture: {furniture_desc}",
-            "Coordinated decor: statement area rug, layered cushions, designer curtains, indoor plants, wall art",
-            "professional interior photography, wide-angle shot, 4K, photorealistic, Indian home",
-        ]
-    else:
-        prompt_parts = [
-            f"Stunning luxury interior design photograph — {dim_str}{room_ctx}",
-            f"Design vision: {style_vision}",
-            f"Furniture: {furniture_desc}",
-            "Rich wall treatment: wood panelling or marble accent wall, designer false ceiling with cove LED lighting and recessed spotlights, premium large-format tile or wood flooring",
-            "Coordinated decor: statement area rug, layered cushions, curtains or blinds, indoor plants, wall art",
-            "professional interior photography, wide-angle shot showing full room, 4K, photorealistic",
-            "no people, warm professional lighting, dramatic and complete transformation, Indian home interior style",
-        ]
-
-    if mood_description:
-        prompt_parts.insert(1, f"Style reference from uploaded image: {mood_description}. Match this aesthetic throughout")
-    elif mood_hint:
-        prompt_parts.insert(1, f"Mood: {mood_hint}")
     if notes:
-        prompt_parts.insert(-4, f"Special requirements: {notes}")
+        parts.append(notes)
 
-    return ". ".join(prompt_parts)
+    return ". ".join(parts)
 
 
 def build_ideogram_prompt(

@@ -107,6 +107,80 @@ async def edit_room_image_kontext(image_url: str, prompt: str) -> dict:
     }
 
 
+async def edit_room_image_kontext_multi(
+    image_urls: list[str],
+    prompt: str,
+) -> dict:
+    """Edit a room photo using FLUX.1 Kontext Max (multi-image) on fal.ai.
+
+    image_urls[0] must be the room photo. Subsequent URLs are furniture / style
+    references that the model can see alongside the room. The prompt should
+    reference them as 'Image 1', 'Image 2', etc. (1-indexed).
+
+    Falls back to single-image Kontext if only one URL is provided.
+
+    Returns {"image_url", "prompt_used", "revised_prompt", "generation_time"} or {"error"}.
+    """
+    if not image_urls:
+        return {"error": "No image URLs provided"}
+    if len(image_urls) == 1:
+        return await edit_room_image_kontext(image_urls[0], prompt)
+
+    ok, fal_client = _init_fal()
+    if not ok:
+        return {"error": "FAL_API_KEY not set or fal-client not installed"}
+
+    # Download and re-upload all images to fal.ai storage
+    import httpx
+    uploaded_urls: list[str] = []
+    try:
+        async with httpx.AsyncClient(timeout=20) as http:
+            for url in image_urls:
+                resp = await http.get(url)
+                resp.raise_for_status()
+                content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0].strip()
+                fal_url = await asyncio.to_thread(fal_client.upload, resp.content, content_type)
+                uploaded_urls.append(fal_url)
+    except Exception as exc:
+        logger.warning("Multi-image upload partially failed, falling back to single-image Kontext: %s", exc)
+        if uploaded_urls:
+            return await edit_room_image_kontext(image_urls[0], prompt)
+        return {"error": f"Image upload failed: {exc}"}
+
+    t0 = time.perf_counter()
+    try:
+        result = await asyncio.to_thread(
+            fal_client.subscribe,
+            "fal-ai/flux-pro/kontext/multi",
+            arguments={
+                "prompt": prompt,
+                "image_urls": uploaded_urls,
+                "guidance_scale": 6.5,
+                "num_inference_steps": 35,
+                "num_images": 1,
+                "output_format": "jpeg",
+            },
+        )
+    except Exception as exc:
+        logger.warning("FLUX Kontext multi failed, falling back to single-image: %s", exc)
+        return await edit_room_image_kontext(image_urls[0], prompt)
+
+    elapsed = time.perf_counter() - t0
+    images = result.get("images") or []
+    if not images:
+        return {"error": "FLUX Kontext multi returned no images"}
+
+    out_url = images[0].get("url") or str(images[0])
+    logger.info("FLUX Kontext multi completed in %.1fs: %s", elapsed, out_url[:80])
+
+    return {
+        "image_url": out_url,
+        "prompt_used": prompt,
+        "revised_prompt": None,
+        "generation_time": round(elapsed, 1),
+    }
+
+
 async def generate_room_image_ideogram(prompt: str) -> dict:
     """Generate a photorealistic room image using Ideogram v3 on fal.ai.
 

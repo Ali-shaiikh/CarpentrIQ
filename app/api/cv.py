@@ -24,15 +24,14 @@ from app.models.carpenter import Carpenter
 from app.models.enquiry import CVResult, Enquiry, EnquiryPhoto
 from app.services.auth_service import auth_service
 
-from app.services.fal_service import edit_room_image_kontext
+from app.dependencies import get_redis
+from app.services.fal_service import edit_room_image_kontext, edit_room_image_kontext_multi
 from app.services.furniture_prompt_builder import (
     build_complete_image_prompt,
     build_kontext_edit_prompt,
 )
-from app.services.image_generation_service import (
-    describe_furniture_from_image,
-    generate_room_image,
-)
+from app.services.furniture_scraper import get_furniture_images_for_items
+from app.services.image_generation_service import generate_room_image
 from app.services.replicate_service import gpt_image_2
 from app.services.trial_subscription_service import (
     check_regenerate_cost,
@@ -63,6 +62,7 @@ async def regenerate_image(
     body: RegenerateImageRequest,
     db: AsyncSession = Depends(get_db),
     carpenter: Carpenter = Depends(auth_service.get_current_carpenter),
+    redis=Depends(get_redis),
 ) -> dict:
     """Private (JWT) — regenerate a room image using the regenerate quota (not image quota).
 
@@ -90,80 +90,70 @@ async def regenerate_image(
             },
         )
 
-    ref_descriptions: dict[int, str] = {}
-    mood_description: str = ""
+    button_scraped: dict[int, str] = {}
+    notes_scraped: list[tuple[str, str]] = []
+    remove_types: set[str] = set()
+    if body.furniture_items or body.notes:
+        try:
+            button_scraped, notes_scraped, remove_types = await get_furniture_images_for_items(
+                body.furniture_items, notes=body.notes, redis=redis
+            )
+        except Exception as exc:
+            logger.warning("Furniture scrape failed (proceeding without): %s", exc)
 
-    # Haiku vision descriptions are only needed for the DALL-E 3 text-only fallback.
-    # On the edit path (reference_room_url provided), gpt-image-2 sees the images directly
-    # so we skip Haiku to save latency and API cost.
-    if not body.reference_room_url:
-        import asyncio as _asyncio
-
-        async def _describe(item_index: int, url: str) -> tuple[int, str]:
-            return item_index, await describe_furniture_from_image(url)
-
-        async def _describe_mood(url: str) -> tuple[int, str]:
-            return -1, await describe_furniture_from_image(url)
-
-        tasks = []
-        if body.furniture_references:
-            tasks.extend([_describe(r["item_index"], r["url"]) for r in body.furniture_references])
-        if body.mood_reference_url:
-            tasks.append(_describe_mood(body.mood_reference_url))
-        if tasks:
-            for res in await _asyncio.gather(*tasks, return_exceptions=True):
-                if isinstance(res, tuple):
-                    idx, desc = res
-                    if desc:
-                        if idx == -1:
-                            mood_description = desc
-                        else:
-                            ref_descriptions[idx] = desc
-
-    # Collect all reference image URLs to pass to gpt-image-2 alongside the room photo
-    ref_image_urls: list[str] = []
+    user_ref_urls: list[str] = []
     if body.mood_reference_url:
-        ref_image_urls.append(body.mood_reference_url)
+        user_ref_urls.append(body.mood_reference_url)
     for ref in (body.furniture_references or []):
         url = ref.get("url") if isinstance(ref, dict) else None
-        if url and url not in ref_image_urls:
-            ref_image_urls.append(url)
+        if url and url not in user_ref_urls:
+            user_ref_urls.append(url)
 
-    has_furniture_reference = bool(ref_image_urls)
+    base_offset = 1 + len(user_ref_urls)
+    scraped_image_indices: dict[int, int] = {}
+    scraped_urls_ordered: list[str] = []
+    for item_idx, img_url in button_scraped.items():
+        scraped_image_indices[item_idx] = base_offset + len(scraped_urls_ordered) + 1
+        scraped_urls_ordered.append(img_url)
 
-    # Build transformation prompt — full interior redesign while preserving room geometry.
-    # Constraints (camera angle, door/window positions) lead the prompt so the model
-    # locks them in before processing the transformation instructions.
+    notes_image_indices: list[tuple[str, int]] = []
+    for label, img_url in notes_scraped:
+        notes_image_indices.append((label, base_offset + len(scraped_urls_ordered) + 1))
+        scraped_urls_ordered.append(img_url)
+
+    all_ref_urls = user_ref_urls + scraped_urls_ordered
+
+    prompt_furniture_items = [
+        item for item in body.furniture_items
+        if item.get("item_type") not in remove_types
+    ]
+
     transform_prompt = build_kontext_edit_prompt(
         room_type=body.room_type,
-        furniture_items=body.furniture_items,
+        furniture_items=prompt_furniture_items,
         material_grade=body.material_grade,
         notes=body.notes,
-        mood_description=mood_description,
         selected_style=body.selected_style,
-        has_furniture_reference=has_furniture_reference,
+        scraped_image_indices=scraped_image_indices if scraped_image_indices else None,
+        notes_image_indices=notes_image_indices if notes_image_indices else None,
     )
 
     if body.reference_room_url:
-        # FLUX Kontext PRIMARY — purpose-built for in-context editing.
-        # Preserves walls, arches, ceiling, camera angle and room geometry while
-        # applying the transformation. gpt-image-2 generates new rooms; Kontext edits them.
-        result = await edit_room_image_kontext(body.reference_room_url, transform_prompt)
+        all_images = [body.reference_room_url] + all_ref_urls
+        result = await edit_room_image_kontext_multi(all_images, transform_prompt)
         if "error" in result:
-            logger.warning("FLUX Kontext failed, falling back to gpt-image-2: %s", result["error"])
+            logger.warning("Kontext multi failed, falling back to gpt-image-2: %s", result["error"])
             result = await gpt_image_2(
                 prompt=transform_prompt,
                 image_url=body.reference_room_url,
-                extra_image_urls=ref_image_urls or None,
+                extra_image_urls=all_ref_urls or None,
             )
         if "error" in result:
             raise HTTPException(status_code=502, detail=result["error"])
     else:
-        # No room photo — fresh generation. Pass any reference images so the model
-        # can use the furniture/style references even without a base room photo.
         result = await gpt_image_2(
             prompt=transform_prompt,
-            extra_image_urls=ref_image_urls or None,
+            extra_image_urls=all_ref_urls or None,
         )
         if "error" in result:
             logger.warning("gpt-image-2 fresh gen failed, falling back to DALL-E 3: %s", result["error"])
@@ -173,9 +163,6 @@ async def regenerate_image(
                 furniture_items=body.furniture_items,
                 material_grade=body.material_grade,
                 notes=body.notes,
-                mood_hint=body.mood_hint,
-                reference_descriptions=ref_descriptions or None,
-                mood_description=mood_description,
                 selected_style=body.selected_style,
             )
             result = await generate_room_image(fallback_prompt)
